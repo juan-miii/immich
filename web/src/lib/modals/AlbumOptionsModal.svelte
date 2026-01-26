@@ -8,6 +8,7 @@
     handleRemoveUserFromAlbum,
     handleUpdateAlbum,
     handleUpdateUserAlbumRole,
+    handleUpdateUserAlbumInTimeline,
   } from '$lib/services/album.service';
   import { user } from '$lib/stores/user.store';
   import {
@@ -39,6 +40,15 @@
     await handleUpdateUserAlbumRole({ albumId: album.id, userId: user.id, role });
   };
 
+  const handleInTimelineChange = async (checked: boolean) => {
+    await handleUpdateUserAlbumInTimeline({ albumId: album.id, userId: $user.id, inTimeline: checked });
+    // Update the local album state
+    const albumUser = album.albumUsers.find(({ user: { id } }) => id === $user.id);
+    if (albumUser) {
+      albumUser.inTimeline = checked;
+    }
+  };
+
   const refreshAlbum = async () => {
     album = await getAlbumInfo({ id: album.id, withoutAssets: true });
   };
@@ -59,6 +69,8 @@
   const { AddUsers, CreateSharedLink } = $derived(getAlbumActions($t, album));
 
   let sharedLinks: SharedLinkResponseDto[] = $state([]);
+  const isOwned = $derived($user.id === album.ownerId);
+  const currentUserAlbumSettings = $derived(album.albumUsers.find(({ user: { id } }) => id === $user.id));
 
   onMount(async () => {
     sharedLinks = await getAllSharedLinks({ albumId: album.id });
@@ -79,7 +91,7 @@
       <div>
         <Text size="medium" fontWeight="semi-bold">{$t('settings')}</Text>
         <div class="grid gap-y-3 ps-2 mt-2">
-          {#if album.order}
+          {#if album.order && isOwned}
             <Field label={$t('display_order')}>
               <Select
                 value={album.order}
@@ -91,12 +103,19 @@
               />
             </Field>
           {/if}
-          <Field label={$t('comments_and_likes')} description={$t('let_others_respond')}>
-            <Switch
-              checked={album.isActivityEnabled}
-              onCheckedChange={(checked) => handleUpdateAlbum(album, { isActivityEnabled: checked })}
-            />
-          </Field>
+          {#if isOwned}
+            <Field label={$t('comments_and_likes')} description={$t('let_others_respond')}>
+              <Switch
+                checked={album.isActivityEnabled}
+                onCheckedChange={(checked) => handleUpdateAlbum(album, { isActivityEnabled: checked })}
+              />
+            </Field>
+          {/if}
+          {#if !isOwned && currentUserAlbumSettings}
+            <Field label={$t('show_in_timeline')} description={$t('show_in_timeline_album_setting_description')}>
+              <Switch checked={currentUserAlbumSettings.inTimeline} onCheckedChange={handleInTimelineChange} />
+            </Field>
+          {/if}
         </div>
       </div>
 

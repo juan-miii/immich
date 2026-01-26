@@ -508,6 +508,7 @@ describe(AlbumService.name, () => {
 
   describe('updateUser', () => {
     it('should update user role', async () => {
+      mocks.album.getById.mockResolvedValue(albumStub.sharedWithAdmin);
       mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set([albumStub.sharedWithAdmin.id]));
       mocks.albumUser.update.mockResolvedValue(null as any);
 
@@ -516,7 +517,20 @@ describe(AlbumService.name, () => {
       });
       expect(mocks.albumUser.update).toHaveBeenCalledWith(
         { albumId: albumStub.sharedWithAdmin.id, userId: userStub.admin.id },
-        { role: AlbumUserRole.Editor },
+        { role: AlbumUserRole.Editor, inTimeline: undefined },
+      );
+    });
+
+    it('should update user inTimeline', async () => {
+      mocks.album.getById.mockResolvedValue(albumStub.sharedWithAdmin);
+      mocks.albumUser.update.mockResolvedValue(null as any);
+
+      await sut.updateUser(authStub.admin, albumStub.sharedWithAdmin.id, userStub.admin.id, {
+        inTimeline: true,
+      });
+      expect(mocks.albumUser.update).toHaveBeenCalledWith(
+        { albumId: albumStub.sharedWithAdmin.id, userId: userStub.admin.id },
+        { role: undefined, inTimeline: true },
       );
     });
   });

@@ -580,12 +580,12 @@
                     text={$t('select_album_cover')}
                     onClick={() => (viewMode = AlbumPageViewMode.SELECT_THUMBNAIL)}
                   />
-                  <MenuOption
-                    icon={mdiCogOutline}
-                    text={$t('options')}
-                    onClick={() => modalManager.show(AlbumOptionsModal, { album })}
-                  />
                 {/if}
+                <MenuOption
+                  icon={mdiCogOutline}
+                  text={$t('options')}
+                  onClick={() => modalManager.show(AlbumOptionsModal, { album })}
+                />
 
                 {#if isOwned}
                   <MenuOption
