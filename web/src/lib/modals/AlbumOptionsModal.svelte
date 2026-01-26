@@ -42,11 +42,13 @@
 
   const handleInTimelineChange = async (checked: boolean) => {
     await handleUpdateUserAlbumInTimeline({ albumId: album.id, userId: $user.id, inTimeline: checked });
-    // Update the local album state
-    const albumUser = album.albumUsers.find(({ user: { id } }) => id === $user.id);
-    if (albumUser) {
-      albumUser.inTimeline = checked;
-    }
+    // Update the local album state with a reassignment to trigger reactivity
+    album = {
+      ...album,
+      albumUsers: album.albumUsers.map((albumUser) =>
+        albumUser.user.id === $user.id ? { ...albumUser, inTimeline: checked } : albumUser,
+      ),
+    };
   };
 
   const refreshAlbum = async () => {
