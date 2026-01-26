@@ -33,6 +33,7 @@ export type AuthUser = {
 export type AlbumUser = {
   user: User;
   role: AlbumUserRole;
+  inTimeline: boolean;
 };
 
 export type AssetFile = {

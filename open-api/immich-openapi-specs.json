@@ -13393,6 +13393,15 @@
             }
           },
           {
+            "name": "withSharedAlbums",
+            "required": false,
+            "in": "query",
+            "description": "Include assets from shared albums with timeline enabled",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "withStacked",
             "required": false,
             "in": "query",
@@ -13554,6 +13563,15 @@
             "required": false,
             "in": "query",
             "description": "Include assets shared by partners",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "withSharedAlbums",
+            "required": false,
+            "in": "query",
+            "description": "Include assets from shared albums with timeline enabled",
             "schema": {
               "type": "boolean"
             }
@@ -15472,6 +15490,9 @@
       },
       "AlbumUserResponseDto": {
         "properties": {
+          "inTimeline": {
+            "type": "boolean"
+          },
           "role": {
             "allOf": [
               {
@@ -15484,6 +15505,7 @@
           }
         },
         "required": [
+          "inTimeline",
           "role",
           "user"
         ],
@@ -23713,6 +23735,9 @@
       },
       "UpdateAlbumUserDto": {
         "properties": {
+          "inTimeline": {
+            "type": "boolean"
+          },
           "role": {
             "allOf": [
               {
@@ -23721,9 +23746,6 @@
             ]
           }
         },
-        "required": [
-          "role"
-        ],
         "type": "object"
       },
       "UpdateAssetDto": {

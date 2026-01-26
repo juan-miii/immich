@@ -124,6 +124,24 @@ export const handleUpdateUserAlbumRole = async ({
   }
 };
 
+export const handleUpdateUserAlbumInTimeline = async ({
+  albumId,
+  userId,
+  inTimeline,
+}: {
+  albumId: string;
+  userId: string;
+  inTimeline: boolean;
+}) => {
+  const $t = await getFormatter();
+
+  try {
+    await updateAlbumUser({ id: albumId, userId, updateAlbumUserDto: { inTimeline } });
+  } catch (error) {
+    handleError(error, $t('errors.unable_to_update_timeline_display_status'));
+  }
+};
+
 export const handleAddUsersToAlbum = async (album: AlbumResponseDto, users: UserResponseDto[]) => {
   const $t = await getFormatter();
 

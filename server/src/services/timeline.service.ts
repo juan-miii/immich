@@ -26,8 +26,9 @@ export class TimelineService extends BaseService {
   }
 
   private async buildTimeBucketOptions(auth: AuthDto, dto: TimeBucketDto): Promise<TimeBucketOptions> {
-    const { userId, ...options } = dto;
+    const { userId, withSharedAlbums, ...options } = dto;
     let userIds: string[] | undefined = undefined;
+    let albumIds: string[] | undefined = undefined;
 
     if (userId) {
       userIds = [userId];
@@ -41,7 +42,14 @@ export class TimelineService extends BaseService {
       }
     }
 
-    return { ...options, userIds };
+    if (withSharedAlbums) {
+      const sharedAlbumIds = await this.albumRepository.getSharedWithUserInTimeline(auth.user.id);
+      if (sharedAlbumIds.length > 0) {
+        albumIds = sharedAlbumIds;
+      }
+    }
+
+    return { ...options, userIds, albumIds };
   }
 
   private async timeBucketChecks(auth: AuthDto, dto: TimeBucketDto) {
@@ -74,6 +82,18 @@ export class TimelineService extends BaseService {
       if (requestedArchived || requestedFavorite || requestedTrash) {
         throw new BadRequestException(
           'withPartners is only supported for non-archived, non-trashed, non-favorited assets',
+        );
+      }
+    }
+
+    if (dto.withSharedAlbums) {
+      const requestedArchived = dto.visibility === AssetVisibility.Archive || dto.visibility === undefined;
+      const requestedFavorite = dto.isFavorite === true || dto.isFavorite === false;
+      const requestedTrash = dto.isTrashed === true;
+
+      if (requestedArchived || requestedFavorite || requestedTrash) {
+        throw new BadRequestException(
+          'withSharedAlbums is only supported for non-archived, non-trashed, non-favorited assets',
         );
       }
     }

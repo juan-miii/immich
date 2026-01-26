@@ -32,6 +32,7 @@ const withAlbumUsers = (eb: ExpressionBuilder<DB, 'album'>) => {
     eb
       .selectFrom('album_user')
       .select('album_user.role')
+      .select('album_user.inTimeline')
       .select((eb) =>
         jsonObjectFrom(eb.selectFrom('user').select(columns.user).whereRef('user.id', '=', 'album_user.userId'))
           .$notNull()
@@ -183,6 +184,22 @@ export class AlbumRepository {
       .select(withSharedLink)
       .orderBy('album.createdAt', 'desc')
       .execute();
+  }
+
+  /**
+   * Get IDs of albums shared with the user that have inTimeline enabled.
+   */
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getSharedWithUserInTimeline(userId: string): Promise<string[]> {
+    const albums = await this.db
+      .selectFrom('album')
+      .select('album.id')
+      .innerJoin('album_user', 'album_user.albumId', 'album.id')
+      .where('album_user.userId', '=', userId)
+      .where('album_user.inTimeline', '=', true)
+      .where('album.deletedAt', 'is', null)
+      .execute();
+    return albums.map((album) => album.id);
   }
 
   /**
