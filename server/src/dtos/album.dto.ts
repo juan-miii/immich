@@ -118,14 +118,18 @@ export class AlbumStatisticsResponseDto {
 }
 
 export class UpdateAlbumUserDto {
-  @ValidateEnum({ enum: AlbumUserRole, name: 'AlbumUserRole' })
-  role!: AlbumUserRole;
+  @ValidateEnum({ enum: AlbumUserRole, name: 'AlbumUserRole', optional: true })
+  role?: AlbumUserRole;
+
+  @ValidateBoolean({ optional: true })
+  inTimeline?: boolean;
 }
 
 export class AlbumUserResponseDto {
   user!: UserResponseDto;
   @ValidateEnum({ enum: AlbumUserRole, name: 'AlbumUserRole' })
   role!: AlbumUserRole;
+  inTimeline!: boolean;
 }
 
 export class ContributorCountResponseDto {
@@ -189,6 +193,7 @@ export const mapAlbum = (entity: MapAlbumDto, withAssets: boolean, auth?: AuthDt
       albumUsers.push({
         user,
         role: albumUser.role,
+        inTimeline: albumUser.inTimeline,
       });
     }
   }

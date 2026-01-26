@@ -321,8 +321,23 @@ export class AlbumService extends BaseService {
   }
 
   async updateUser(auth: AuthDto, id: string, userId: string, dto: UpdateAlbumUserDto): Promise<void> {
-    await this.requireAccess({ auth, permission: Permission.AlbumShare, ids: [id] });
-    await this.albumUserRepository.update({ albumId: id, userId }, { role: dto.role });
+    const album = await this.findOrFail(id, { withAssets: false });
+    const albumUser = album.albumUsers.find(({ user: { id } }) => id === userId);
+    if (!albumUser) {
+      throw new BadRequestException('Album not shared with user');
+    }
+
+    // Changing role requires album owner permission
+    if (dto.role !== undefined) {
+      await this.requireAccess({ auth, permission: Permission.AlbumShare, ids: [id] });
+    }
+
+    // Changing inTimeline requires either album owner permission or being the user themselves
+    if (dto.inTimeline !== undefined && auth.user.id !== userId) {
+      await this.requireAccess({ auth, permission: Permission.AlbumShare, ids: [id] });
+    }
+
+    await this.albumUserRepository.update({ albumId: id, userId }, { role: dto.role, inTimeline: dto.inTimeline });
   }
 
   private async findOrFail(id: string, options: AlbumInfoOptions) {
